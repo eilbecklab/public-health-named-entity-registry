@@ -4,7 +4,7 @@ title: Public Health Named Entity Registry
 description: >-
   A curated global registry of public health named entities, their qualified
   relationships, platform participations, and supporting evidence.
-license: https://creativecommons.org/publicdomain/zero/1.0/
+license: https://spdx.org/licenses/MIT.html
 version: 0.1.0
 
 prefixes:
