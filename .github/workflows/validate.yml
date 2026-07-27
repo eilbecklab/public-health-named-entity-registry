@@ -24,3 +24,45 @@ jobs:
       - run: ruff check .
       - run: mypy
       - run: phner generate-schema
+
+  neo4j-smoke:
+    runs-on: ubuntu-latest
+    services:
+      neo4j:
+        image: neo4j:5.26-community
+        env:
+          NEO4J_AUTH: neo4j/synthetic-test-password
+        ports:
+          - 7687:7687
+    env:
+      NEO4J_URI: neo4j://localhost:7687
+      NEO4J_USERNAME: neo4j
+      NEO4J_PASSWORD: synthetic-test-password
+      NEO4J_DATABASE: neo4j
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+      - run: python -m pip install -e ".[dev]"
+      - run: phner graph check --wait-seconds 90
+      - run: phner graph init
+      - name: Exercise canonical graph workflow
+        run: |
+          first="$(phner graph new-entity \
+            --name 'Northstar Synthetic Health Authority' \
+            --type organization \
+            --created-by synthetic-test-suite)"
+          second="$(phner graph new-entity \
+            --name 'Northstar Synthetic Jurisdiction' \
+            --type jurisdiction \
+            --created-by synthetic-test-suite)"
+          phner graph new-relationship \
+            --subject "$first" \
+            --type OPERATES_IN \
+            --object "$second" \
+            --created-by synthetic-test-suite
+          phner graph validate
+          phner graph stats --json
+          phner graph export --output build/neo4j-smoke.json

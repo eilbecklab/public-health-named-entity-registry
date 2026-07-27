@@ -1,13 +1,15 @@
 # Governance
 
-**Status:** Draft  
-**Effective date:** Not yet approved  
-**Applies to:** PHNER schema, canonical records, controlled vocabularies,
-validation policy, releases, and downstream projections
+**Status:** Lightweight bootstrap draft
 
-No production curation or public release should begin until the required roles,
-initial controlled vocabularies, relationship rules, and release policy have
-been approved.
+**Effective date:** Not yet approved
+
+**Applies to:** PHNER schema, canonical records, controlled vocabularies,
+validation policy, releases, and the canonical Neo4j graph
+
+Exploratory graph construction may proceed with provisional assertions.
+Formal role assignments and release approvals are required only before PHNER
+data is presented as a supported production release.
 
 ## MVP boundary
 
@@ -32,8 +34,8 @@ The registry must designate named people or groups for the following roles:
   vocabularies, migrations, and schema-version policy.
 - **Technical maintainer:** responsible for validation, generation, tests, CI,
   release tooling, and reproducible builds.
-- **Integration owner:** responsible for Neo4j projections, downstream data
-  contracts, and source-of-truth boundaries.
+- **Integration owner:** responsible for the canonical Neo4j graph, downstream
+  data contracts, backups, and source-of-truth boundaries.
 
 One person or group may hold more than one role, but responsibility for each
 role must be documented. When one person acts in multiple required roles, the
@@ -79,7 +81,7 @@ report warnings, and suggest possible duplicates, but it must never assign
 | Routine record verification | Domain curator |
 | `SAME_AS`, merge, split, or rename-versus-replacement | Domain curator and registry steward |
 | New relationship or controlled-vocabulary value | Schema maintainer and registry steward |
-| Breaking schema or projection change | Schema maintainer, technical maintainer, integration owner, and registry steward |
+| Breaking graph-contract or schema change | Schema maintainer, technical maintainer, integration owner, and registry steward |
 | Disputed assertion resolution | Domain curator and registry steward |
 | External identifier scheme | Schema maintainer, integration owner, and registry steward |
 | Release approval | Registry steward after technical validation |

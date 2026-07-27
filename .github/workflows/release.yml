@@ -1,4 +1,4 @@
-name: Prepare release candidate
+name: Prepare legacy YAML interchange bundle
 
 on:
   workflow_dispatch:
@@ -26,4 +26,3 @@ jobs:
         with:
           name: phner-${{ inputs.version }}
           path: build/
-

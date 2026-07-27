@@ -1,5 +1,13 @@
+graph_contract_version: 0.2.0
+canonical_store: neo4j
 base_label: NamedEntity
 merge_key: entity_id
+required_entity_properties:
+  - entity_id
+  - entity_type
+  - preferred_name
+  - status
+  - assertion_status
 entity_labels:
   organization: Organization
   organizational_unit: OrganizationalUnit
@@ -13,4 +21,8 @@ entity_labels:
   platform: Platform
   other: Other
 participation_label: PlatformParticipation
-
+evidence_label: EvidenceSource
+system_relationship_types:
+  - HAS_PLATFORM_PARTICIPATION
+  - SUPPORTED_BY
+  - WITH_PLATFORM

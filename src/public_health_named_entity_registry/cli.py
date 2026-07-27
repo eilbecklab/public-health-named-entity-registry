@@ -1,4 +1,4 @@
-"""Command-line interface for PHNER curation and release work."""
+"""Command-line interface for the PHNER Neo4j graph and interchange tooling."""
 
 from __future__ import annotations
 
@@ -13,6 +13,16 @@ from .duplicate_detection import find_duplicates
 from .identifiers import IdentifierError, reserve_id
 from .loader import load_registry
 from .models import Issue
+from .neo4j_store import (
+    Neo4jSettings,
+    apply_migrations,
+    check_connectivity,
+    create_entity,
+    create_relationship,
+    export_graph,
+    graph_stats,
+    validate_graph,
+)
 from .release import ReleaseError, build_bundle, prepare_release, verify_release
 from .review_report import build_review, changed_yaml_files, record_report
 from .scaffolding import ScaffoldingError, new_record
@@ -122,6 +132,91 @@ def _cmd_build(args: argparse.Namespace) -> int:
     return 0
 
 
+def _graph_settings() -> Neo4jSettings:
+    return Neo4jSettings.from_env()
+
+
+def _cmd_graph_check(args: argparse.Namespace) -> int:
+    settings = _graph_settings()
+    information = check_connectivity(settings, wait_seconds=args.wait_seconds)
+    print(
+        f"Connected to {information['address']} ({information['agent']}), "
+        f"database {information['database']}."
+    )
+    return 0
+
+
+def _cmd_graph_init(args: argparse.Namespace) -> int:
+    applied, skipped = apply_migrations(_graph_settings(), _root(args))
+    for name in applied:
+        print(f"Applied {name}")
+    for name in skipped:
+        print(f"Already applied {name}")
+    return 0
+
+
+def _cmd_graph_new_entity(args: argparse.Namespace) -> int:
+    identifier = create_entity(
+        _graph_settings(),
+        args.name,
+        args.entity_type,
+        created_by=args.created_by,
+        root=_root(args),
+    )
+    print(identifier)
+    return 0
+
+
+def _cmd_graph_new_relationship(args: argparse.Namespace) -> int:
+    identifier = create_relationship(
+        _graph_settings(),
+        args.subject,
+        args.relationship_type,
+        args.object,
+        created_by=args.created_by,
+        root=_root(args),
+    )
+    print(identifier)
+    return 0
+
+
+def _cmd_graph_validate(args: argparse.Namespace) -> int:
+    findings = validate_graph(_graph_settings(), _root(args))
+    if not findings:
+        print("Graph validation passed with no findings.")
+        return 0
+    for finding in findings:
+        print(
+            f"{finding.identifier}: {finding.severity.upper()} "
+            f"[{finding.code}] {finding.message}"
+        )
+    errors = sum(finding.severity == "error" for finding in findings)
+    warnings = sum(finding.severity == "warning" for finding in findings)
+    print(f"{errors} error(s), {warnings} warning(s)")
+    return 1 if errors else 0
+
+
+def _cmd_graph_stats(args: argparse.Namespace) -> int:
+    counts = graph_stats(_graph_settings())
+    if args.json:
+        print(json.dumps(counts, indent=2, sort_keys=True))
+    else:
+        for label, count in counts.items():
+            print(f"{label}: {count}")
+    return 0
+
+
+def _cmd_graph_export(args: argparse.Namespace) -> int:
+    root = _root(args)
+    destination = (
+        Path(args.output).resolve()
+        if args.output
+        else root / "build" / "neo4j-snapshot.json"
+    )
+    print(export_graph(_graph_settings(), destination))
+    return 0
+
+
 def _cmd_generate_schema(args: argparse.Namespace) -> int:
     root = _root(args)
     output = Path(args.output).resolve() if args.output else root / "build" / "schema"
@@ -152,7 +247,74 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--project-root", help="Override the PHNER repository root.")
     commands = parser.add_subparsers(dest="command", required=True)
 
-    new = commands.add_parser("new", help="Reserve an ID and create a blank curator record.")
+    graph = commands.add_parser(
+        "graph",
+        help="Manage the canonical Neo4j property graph.",
+    )
+    graph_commands = graph.add_subparsers(dest="graph_command", required=True)
+    graph_check = graph_commands.add_parser("check", help="Verify Neo4j connectivity.")
+    graph_check.add_argument(
+        "--wait-seconds",
+        type=int,
+        default=0,
+        help="Wait up to this many seconds for Neo4j to become available.",
+    )
+    graph_check.set_defaults(function=_cmd_graph_check)
+
+    graph_init = graph_commands.add_parser(
+        "init",
+        help="Apply repository-controlled graph migrations.",
+    )
+    graph_init.set_defaults(function=_cmd_graph_init)
+
+    graph_new_entity = graph_commands.add_parser(
+        "new-entity",
+        help="Create a minimally valid NamedEntity node.",
+    )
+    graph_new_entity.add_argument("--name", required=True, help="Preferred display name.")
+    graph_new_entity.add_argument(
+        "--type",
+        dest="entity_type",
+        required=True,
+        help="Entity type defined by mappings/neo4j_mapping.yaml.",
+    )
+    graph_new_entity.add_argument("--created-by", help="Editor identity to record.")
+    graph_new_entity.set_defaults(function=_cmd_graph_new_entity)
+
+    graph_new_relationship = graph_commands.add_parser(
+        "new-relationship",
+        help="Create an identified relationship between NamedEntity nodes.",
+    )
+    graph_new_relationship.add_argument("--subject", required=True)
+    graph_new_relationship.add_argument("--type", dest="relationship_type", required=True)
+    graph_new_relationship.add_argument("--object", required=True)
+    graph_new_relationship.add_argument("--created-by", help="Editor identity to record.")
+    graph_new_relationship.set_defaults(function=_cmd_graph_new_relationship)
+
+    graph_validate = graph_commands.add_parser(
+        "validate",
+        help="Validate the live graph against the repository contract.",
+    )
+    graph_validate.set_defaults(function=_cmd_graph_validate)
+
+    graph_stats_parser = graph_commands.add_parser(
+        "stats",
+        help="Show canonical graph record counts.",
+    )
+    graph_stats_parser.add_argument("--json", action="store_true")
+    graph_stats_parser.set_defaults(function=_cmd_graph_stats)
+
+    graph_export = graph_commands.add_parser(
+        "export",
+        help="Write a portable JSON snapshot (not an operational backup).",
+    )
+    graph_export.add_argument("--output")
+    graph_export.set_defaults(function=_cmd_graph_export)
+
+    new = commands.add_parser(
+        "new",
+        help="Create an optional YAML interchange record; Neo4j remains canonical.",
+    )
     new.add_argument("record_type", choices=RECORD_CONFIG)
     new.add_argument("--name-slug")
     new.add_argument("--subject", help="Curator-supplied relationship subject.")
@@ -166,7 +328,10 @@ def build_parser() -> argparse.ArgumentParser:
     reserve.add_argument("record_type", choices=RECORD_CONFIG)
     reserve.set_defaults(function=_cmd_reserve)
 
-    validate = commands.add_parser("validate", help="Validate a file, changed files, or registry.")
+    validate = commands.add_parser(
+        "validate",
+        help="Validate optional YAML interchange records.",
+    )
     validation_targets = validate.add_subparsers(dest="validation_target", required=True)
     validate_file_parser = validation_targets.add_parser("file")
     validate_file_parser.add_argument("path")
@@ -190,7 +355,10 @@ def build_parser() -> argparse.ArgumentParser:
     review_targets.add_parser("registry")
     review.set_defaults(function=_cmd_review)
 
-    build = commands.add_parser("build", help="Build a development bundle.")
+    build = commands.add_parser(
+        "build",
+        help="Build a bundle from optional YAML interchange records.",
+    )
     build.add_argument("--output")
     build.add_argument("--skip-schema-artifacts", action="store_true")
     build.set_defaults(function=_cmd_build)

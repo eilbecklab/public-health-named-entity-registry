@@ -1,40 +1,44 @@
-# Strategy review
+# Neo4j-first strategy
 
-The implementation strategy is sound and appropriately conservative for a
-high-governance registry. Its strongest choices are durable identity separated
-from names, first-class evidence-backed relationships, one global namespace,
-Git-reviewed YAML, and a rebuildable Neo4j projection.
+PHNER now treats Neo4j as the canonical operational registry rather than as a
+disposable projection of hand-edited YAML.
 
-The first draft resolves two internal gaps:
+## Rationale
 
-1. `SAME_AS` was required to carry explicit merge-review metadata, but no schema
-   field was proposed. `IdentityReview` now supplies reviewer, date, and
-   rationale only where exact identity is asserted.
-2. Scanning current files cannot prevent ID reuse after deletion. A tracked,
-   atomically updated reservation ledger is used in addition to collision scans.
+The intended downstream platform is Neo4j, named entities must be editable
+independently, and a graph browser will be built on top of the result. Making
+Neo4j canonical removes an unnecessary synchronization boundary and allows
+Bloom to provide an immediate visual editing interface.
 
-The governance process and minimum approval roles are now documented, but the
-role-assignment table remains intentionally unassigned. Before production
-curation, the project still must approve or assign:
+The parts of the original design that remain valuable are:
 
-- the named people or groups holding each governance role;
-- the durable schema and entity URI namespace replacing `example.org`;
-- which classifications and relationship endpoint rules are approved;
-- how stale a review may be and whether each warning blocks release;
-- the release-ID sequence owner across concurrent branches;
-- the legal license and contributor policy;
-- the initial decision records approving `SAME_AS`, split, merger, retirement,
-  and dispute procedures.
+- stable opaque PHNER identifiers;
+- controlled entity labels and relationship types;
+- explicit relationship direction;
+- validation independent of the editing interface;
+- repository-reviewed schema migrations and mapping rules;
+- portable exports and reproducible downstream transformations.
 
-Recommended hardening after this draft:
+## MVP decisions
 
-- add migration tooling before the first breaking schema change;
-- sign release checksums or provenance attestations;
-- regenerate and byte-compare all views during independent verification;
-- add field-level assertions only when real curation demonstrates the need;
-- test against the deployed Neo4j version in an integration job;
-- introduce a dependency lock after selecting the supported Python versions.
+- Neo4j is the source of truth for canonical entities and relationships.
+- Bloom is the interim human editor.
+- The CLI atomically allocates entity and relationship IDs.
+- Git stores migrations, validation, mappings, tests, and documentation.
+- LinkML and YAML remain interchange mechanisms.
+- `phner graph export` is a portable snapshot, not a database backup.
+- Operational recovery uses Neo4j-native backup or dump facilities.
 
-External geographic, organizational, and semantic cross-references remain
-deferred. Their governance and proposed additive model are documented in the
-[external cross-reference roadmap](roadmap/external-cross-references.md).
+## Near-term work
+
+1. Load a small representative set of provisional entities.
+2. Refine node properties and relationship types through real graph queries.
+3. Add evidence-source and platform-participation creation commands.
+4. Add domain-specific Cypher validation for relationship endpoints and cycles.
+5. Configure a shared Bloom Perspective.
+6. Define backup, restore, and access-control procedures for the deployed
+   Neo4j environment.
+7. Build a thin browser directly against the stable graph contract.
+
+Formal publication governance, external cross-reference policy, and advanced
+release packaging can wait until the graph and browser workflow are proven.

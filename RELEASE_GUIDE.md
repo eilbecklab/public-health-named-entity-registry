@@ -1,68 +1,70 @@
-# Release guide
+# Graph snapshot and backup guide
 
-## Prepare
+Neo4j is the canonical PHNER store. Publishing source code and graph-contract
+migrations is separate from backing up or exporting graph data.
 
-Commit the intended source records, then run:
+## Validate before a snapshot
 
 ```bash
-phner validate registry --release-policy
-phner release prepare --version 0.1.0
+phner graph check
+phner graph validate
+phner graph stats
 ```
 
-Preparation normally requires a clean Git worktree. `--allow-dirty` is an
-explicit acknowledgement for local experiments and should not be used for an
-approved release.
+Resolve validation errors before creating a snapshot intended for downstream
+use.
 
-The candidate bundle contains assembled YAML and JSON, CSV tables, LinkML
-JSON Schema and Python models, generated schema documentation, Neo4j Cypher,
-quality and review reports, release notes, a manifest, and SHA-256 checksums.
-
-Release preparation rejects structural errors, unresolved references, missing
-evidence, graph-policy errors, and candidate or illustrative assertions.
-It permits verified, provisional, and disputed assertions under the
-[governance status policy](GOVERNANCE.md#assertion-status-policy). Warnings
-still require curator review.
-
-For reproducible timestamps in controlled builds, set `SOURCE_DATE_EPOCH`.
-
-## Verify
+## Portable snapshot
 
 ```bash
+phner graph export --output build/neo4j-snapshot.json
+```
+
+The JSON snapshot contains PHNER nodes, labels, properties, and relationships
+in stable business-key order. It is useful for:
+
+- inspecting the graph outside Neo4j;
+- automated tests and downstream transformations;
+- publishing a deliberately reviewed data extract;
+- rebuilding noncanonical search or analytics views.
+
+It is not an operational backup and does not include database configuration,
+users, roles, indexes, constraints, transaction history, or every Neo4j data
+type.
+
+## Operational backup
+
+Use the method supported by the deployed Neo4j environment:
+
+- Enterprise deployments: online `neo4j-admin database backup`;
+- offline deployments: `neo4j-admin database dump`;
+- Aura: the backup and snapshot facilities supplied by Aura.
+
+Test restoration on a separate database. Store backups outside the source
+repository with appropriate access controls and retention.
+
+## Graph-contract release
+
+Changes to labels, relationship types, constraints, or required properties
+should include:
+
+1. a new numbered file under `neo4j/migrations/` when database state changes;
+2. matching updates to mappings and validation;
+3. tests and documentation;
+4. a successful disposable-database smoke test.
+
+Never rewrite a migration already applied to a shared database. Add a new
+migration that advances the existing state.
+
+## Legacy interchange bundles
+
+The older commands remain available for YAML-based interchange:
+
+```bash
+phner validate registry
+phner release prepare --version 0.1.0
 phner release verify build/
 ```
 
-Verification checks every listed digest and revalidates the assembled registry.
-Any missing, changed, or structurally invalid artifact fails verification.
-
-## Approve and publish
-
-Inspect `build/review-report.md`, `build/quality-report.json`,
-`build/release-manifest.yaml`, and `build/RELEASE_NOTES.md`.
-
-The release pull request must include a decision record based on
-[`docs/decisions/0000-template.md`](docs/decisions/0000-template.md). It should
-identify the version, governed changes, validation result, reviewed warnings,
-migrations, and downstream compatibility. The registry steward approves the
-release only after technical validation and the required governed decisions are
-approved.
-
-A practical sequence is:
-
-1. add the proposed release decision to the release pull request;
-2. run validation, preparation, and verification in CI;
-3. resolve warnings and obtain required reviews;
-4. merge the approved source and decision record;
-5. prepare and verify the bundle from the clean approved commit;
-6. confirm the manifest Git commit and release ID;
-7. create the annotated tag and publish explicitly.
-
-Publication remains an explicit curator operation:
-
-```bash
-git add .
-git commit -m "Release PHNER v0.1.0"
-git tag -a v0.1.0 -m "PHNER v0.1.0"
-git push origin main --follow-tags
-```
-
-The tooling never tags, pushes, creates a GitHub release, or writes to Neo4j.
+Those bundles are derived from YAML under `data/`; they do not export the
+canonical Neo4j database and should not be presented as a graph backup.

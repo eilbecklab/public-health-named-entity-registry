@@ -1,13 +1,28 @@
 # Contributing
 
-Keep each curation change small and reviewable. Create canonical records through
-`phner new`, cite curator-reviewed evidence, run registry validation and
-duplicate detection, and inspect the Git diff.
+Keep graph-contract changes small and reviewable. Git changes cover Cypher
+migrations, entity-label mappings, relationship rules, validation, interchange
+schemas, tests, and documentation. Canonical entity edits happen in Neo4j.
 
-Do not add scraped production records, inferred relationships, real entities in
-test fixtures, generated `build/` files, external identifier placeholders, or
-direct Neo4j state. Schema and vocabulary changes require tests and a migration
-note when existing records are affected.
+Do not commit production exports, database dumps, credentials, scraped records,
+real entities in test fixtures, or generated `build/` files. Schema and
+vocabulary changes require tests and a numbered migration when existing graph
+data is affected.
+
+Before opening a pull request, run:
+
+```bash
+pytest
+ruff check .
+mypy
+```
+
+When a disposable Neo4j test database is available, also run:
+
+```bash
+phner graph init
+phner graph validate
+```
 
 Routine curation may proceed under approved policy. Create a
 [governance decision record](docs/decisions/README.md) when a change involves:
@@ -19,11 +34,11 @@ Routine curation may proceed under approved policy. Create a
 - external identifier schemes;
 - breaking downstream or Neo4j projection changes.
 
-The decision record, required reviewers, tests, migration, and affected
-documentation should normally be reviewed in the same pull request. If one
-person acts in multiple required roles, disclose that in the record.
+The decision record, tests, migration, and affected documentation should
+normally be reviewed in the same pull request.
 
-Before production curation begins, the role-assignment table in
-[`GOVERNANCE.md`](GOVERNANCE.md) must name the responsible people or groups.
+Exploratory graph construction may use `assertion_status: provisional`.
+Production publication requirements can be tightened after the graph model and
+editing workflow have been proven.
 
 The pull request template contains the curation and governance checklist.

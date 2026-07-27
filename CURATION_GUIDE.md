@@ -1,86 +1,71 @@
 # Curation guide
 
-## 1. Create evidence first
+PHNER records are curated directly in Neo4j. The CLI creates stable identifiers
+and baseline records; Neo4j Bloom is the initial visual editor.
 
-Run `phner new source`, open the printed file, and transcribe only facts from a
-curator-reviewed source. Give the source a type, title, and either a URL or
-document identifier. Record retrieval date and a useful locator when possible.
+## 1. Initialize a database
+
+Configure the `NEO4J_*` environment variables described in
+[`docs/neo4j-workflow.md`](docs/neo4j-workflow.md), then run:
+
+```bash
+phner graph check
+phner graph init
+```
 
 ## 2. Create a named entity
 
-Run:
-
 ```bash
-phner new entity --name-slug working-label --created-by "your curator ID"
+phner graph new-entity \
+  --name "Working display name" \
+  --type organization \
+  --created-by "$USER"
 ```
 
-The slug is only a filename aid. It is not identity and can change. Fill every
-required field, attach one or more `source_ids`, and keep
-`assertion_status: provisional` until the actual review is complete.
+The printed `phner-ent-NNNNNN` identifier is permanent. Do not replace it with
+a Neo4j internal element ID, an external organization code, or a name-derived
+identifier.
 
-Use one of the small structural `entity_type` values. Use classifications for
-specific categories. Administrative parentage, jurisdiction served, and
-physical location are separate assertions.
+Open the entity in Bloom and complete the useful properties. Keep
+`assertion_status` as `provisional` while the graph is exploratory.
 
-See the [assertion status policy](GOVERNANCE.md#assertion-status-policy) before
-changing a record to `verified`, `disputed`, or another review state.
-
-## 3. Add relationships and participations
+## 3. Create a relationship
 
 ```bash
-phner new relationship --subject phner-ent-000001 --object phner-ent-000002
-phner new participation --entity phner-ent-000001 --platform phner-ent-000003
+phner graph new-relationship \
+  --subject phner-ent-000001 \
+  --type OPERATES_IN \
+  --object phner-ent-000002 \
+  --created-by "$USER"
 ```
 
-These flags copy values supplied by the curator; they do not infer facts.
-Relationships require evidence. `SAME_AS` additionally requires
-`identity_review` with reviewer, date, and rationale plus an approved
-[governance decision record](docs/decisions/README.md).
+Relationship direction is significant. Consult
+[`mappings/relationship_rules.yaml`](mappings/relationship_rules.yaml) before
+choosing the type. Add `valid_from`, `valid_to`, and `source_ids` properties in
+Bloom when they are known.
 
-## 4. Validate and review
+## 4. Validate frequently
 
 ```bash
-phner validate file data/entities/phner-ent-000001.yaml
-phner validate registry
-phner find-duplicates
-phner review record phner-ent-000001
-phner review changed
+phner graph validate
+phner graph stats
 ```
 
-Duplicate output is a warning list only. Never merge or retire identities
-without an explicit governance decision.
+Validation is especially important after direct Bloom edits because Bloom
+provides general graph editing rather than PHNER-specific forms.
 
-## History decisions
+## 5. Work safely
 
-Keep the same entity ID for a rename or ordinary detail change. Create a new
-entity for a split, merger, replacement, or broken organizational continuity,
-then add `SUCCESSOR_OF` or `PREDECESSOR_OF`.
+- Allocate new IDs through the CLI.
+- Treat `entity_id` and `relationship_id` as immutable.
+- Do not use Neo4j internal element IDs as external identifiers.
+- Avoid deleting entities during exploration; mark their status instead.
+- Do not commit credentials, graph exports, or database backups.
+- Back up the database using the method appropriate to the Neo4j deployment.
 
-A merge, split, retirement, `SAME_AS`, or rename-versus-replacement decision
-requires the reviews defined in
-[the governance approval matrix](GOVERNANCE.md#minimum-approval-matrix).
-Create and approve the decision record before treating the identity change as
-canonical.
+## Optional YAML interchange
 
-A missing validity date means unknown. It does not assert infinite validity.
-
-When evidence conflicts, preserve the existing reviewed assertion and both
-sources, use `disputed` when the canonical claim is contested, and open a
-decision record if resolving the conflict changes identity or policy.
-
-## External identifiers
-
-External cross-references are not implemented in the MVP. Do not add external
-identifier fields, placeholder arrays, or identifiers to canonical records.
-The future policy and design are documented in the
-[external cross-reference roadmap](docs/roadmap/external-cross-references.md).
-
-## Identifier collisions
-
-The tracked `.phner/id-reservations.yaml` ledger prevents local reuse. Parallel
-branches can reserve the same number, so merge the ledger carefully. If two
-branches collide, keep the ID already merged to the target branch and run
-`phner new ...` again on the other branch. Do not hand-edit an accepted ID.
-
-If `.phner/id-reservations.lock` remains after an interrupted command, confirm
-that no `phner` process is running before deleting only that lock file.
+The older `phner new`, `phner validate registry`, and `phner build` commands
+remain available for structured interchange and migration work. YAML files in
+`data/` are not synchronized automatically with Neo4j and are not canonical in
+the Neo4j-first workflow.

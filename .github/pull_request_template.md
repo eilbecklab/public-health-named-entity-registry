@@ -1,6 +1,6 @@
 ## Summary
 
-Describe the curation or tooling change and its evidence.
+Describe the graph-contract, migration, validation, or tooling change.
 
 ## Governance
 
@@ -11,18 +11,12 @@ Describe the curation or tooling change and its evidence.
 
 ## Checklist
 
-- [ ] Record was created from a PHNER template
-- [ ] PHNER identifier is globally unique
-- [ ] Preferred name was manually verified
-- [ ] Entity type and classifications were selected deliberately
-- [ ] Administrative parent is separate from jurisdiction and location
-- [ ] Every relationship endpoint uses a PHNER ID
-- [ ] Evidence was added manually
-- [ ] Assertion status reflects actual review state
-- [ ] Duplicate warnings were reviewed
-- [ ] LinkML and whole-registry validation pass
-- [ ] No synthetic fixture is in canonical data
-- [ ] Generated files were not edited manually
+- [ ] Applied database changes use a new numbered Cypher migration
+- [ ] Existing applied migrations were not rewritten
+- [ ] PHNER business IDs remain stable and unique
+- [ ] Entity labels and relationship types match the graph contract
+- [ ] Live graph validation was run against a disposable database when applicable
+- [ ] Unit tests, Ruff, and mypy pass
+- [ ] No production graph export, dump, or credential was committed
 - [ ] Governed changes have a decision record and required approvals
 - [ ] Breaking changes include migration and downstream compatibility notes
-- [ ] No deferred external-identifier fields or placeholders were added
