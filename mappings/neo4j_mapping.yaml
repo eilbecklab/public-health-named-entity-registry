@@ -1,0 +1,16 @@
+base_label: NamedEntity
+merge_key: entity_id
+entity_labels:
+  organization: Organization
+  organizational_unit: OrganizationalUnit
+  program: Program
+  initiative: Initiative
+  network: Network
+  group: Group
+  facility: Facility
+  jurisdiction: Jurisdiction
+  geographic_region: GeographicRegion
+  platform: Platform
+  other: Other
+participation_label: PlatformParticipation
+

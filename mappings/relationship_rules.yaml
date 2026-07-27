@@ -1,0 +1,46 @@
+PART_OF:
+  subject_types: [organization, organizational_unit, program, initiative, network, group, facility, platform]
+  object_types: [organization, organizational_unit]
+  acyclic: true
+  max_current_objects: 1
+SERVES_JURISDICTION:
+  object_types: [jurisdiction]
+WITHIN_JURISDICTION:
+  subject_types: [jurisdiction]
+  object_types: [jurisdiction]
+  acyclic: true
+  max_current_objects: 1
+LOCATED_IN:
+  object_types: [jurisdiction]
+HEADQUARTERED_IN:
+  object_types: [jurisdiction]
+  max_current_objects: 1
+REGISTERED_IN:
+  object_types: [jurisdiction]
+OPERATES_IN:
+  object_types: [jurisdiction]
+HAS_GEOGRAPHIC_SCOPE:
+  object_types: [geographic_region, jurisdiction]
+PARTICIPATES_IN:
+  object_types: [program, initiative, network, group, platform]
+MEMBER_OF:
+  object_types: [network, group]
+OPERATED_BY:
+  subject_types: [facility, program, initiative, network, group, platform]
+  object_types: [organization, organizational_unit]
+  max_current_objects: 1
+SPONSORED_BY:
+  subject_types: [program, initiative, network, group]
+  object_types: [organization, organizational_unit, group]
+FUNDED_BY:
+  object_types: [organization, organizational_unit, program, initiative]
+COLLABORATES_WITH:
+  symmetric: true
+SUCCESSOR_OF:
+  inverse: PREDECESSOR_OF
+PREDECESSOR_OF:
+  inverse: SUCCESSOR_OF
+SAME_AS:
+  symmetric: true
+  requires_identity_review: true
+

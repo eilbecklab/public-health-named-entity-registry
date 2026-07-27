@@ -1,0 +1,26 @@
+# Required. Assigned by `phner new entity`.
+entity_id: phner-ent-000000
+# Required. Select a value from EntityType.
+entity_type:
+# Required. Current curator-selected display name.
+preferred_name:
+names: []
+classifications: []
+jurisdiction_scopes: []
+# Required.
+status: active
+valid_from:
+valid_to:
+official_urls: []
+locations: []
+# Add at least one evidence source before release.
+source_ids: []
+curation:
+  assertion_status: provisional
+  steward:
+  created_at:
+  created_by:
+  last_reviewed:
+  reviewed_by:
+  notes:
+

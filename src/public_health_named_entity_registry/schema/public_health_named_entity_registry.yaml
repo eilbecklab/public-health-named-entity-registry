@@ -1,0 +1,495 @@
+id: https://example.org/public-health-named-entity-registry
+name: public-health-named-entity-registry
+title: Public Health Named Entity Registry
+description: >-
+  A curated global registry of public health named entities, their qualified
+  relationships, platform participations, and supporting evidence.
+license: https://creativecommons.org/publicdomain/zero/1.0/
+version: 0.1.0
+
+prefixes:
+  linkml: https://w3id.org/linkml/
+  schema: http://schema.org/
+  phner: https://example.org/public-health-named-entity-registry/
+
+default_prefix: phner
+default_range: string
+imports:
+  - linkml:types
+
+classes:
+  Registry:
+    tree_root: true
+    description: A complete assembled registry release.
+    attributes:
+      release:
+        range: RegistryRelease
+        required: true
+        inlined: true
+      entities:
+        range: NamedEntity
+        multivalued: true
+        inlined_as_list: true
+      relationships:
+        range: EntityRelationship
+        multivalued: true
+        inlined_as_list: true
+      participations:
+        range: PlatformParticipation
+        multivalued: true
+        inlined_as_list: true
+      evidence:
+        range: EvidenceSource
+        multivalued: true
+        inlined_as_list: true
+
+  NamedEntity:
+    description: A stable PHNER identity for a named public health entity.
+    class_uri: schema:Thing
+    attributes:
+      entity_id:
+        identifier: true
+        range: entity_identifier
+        required: true
+      preferred_name:
+        range: string
+        required: true
+      entity_type:
+        range: EntityType
+        required: true
+      names:
+        range: EntityName
+        multivalued: true
+        inlined_as_list: true
+      classifications:
+        range: EntityClassification
+        multivalued: true
+      jurisdiction_scopes:
+        range: JurisdictionScope
+        multivalued: true
+      status:
+        range: EntityStatus
+        required: true
+      valid_from:
+        range: date
+      valid_to:
+        range: date
+      official_urls:
+        range: uri
+        multivalued: true
+      locations:
+        range: PhysicalLocation
+        multivalued: true
+        inlined_as_list: true
+      source_ids:
+        range: source_identifier
+        multivalued: true
+      curation:
+        range: CurationMetadata
+        required: true
+        inlined: true
+
+  EntityName:
+    description: A name or label associated with an entity.
+    attributes:
+      value:
+        range: string
+        required: true
+      name_type:
+        range: NameType
+        required: true
+      language:
+        range: string
+      is_official:
+        range: boolean
+      valid_from:
+        range: date
+      valid_to:
+        range: date
+      source_ids:
+        range: source_identifier
+        multivalued: true
+
+  PhysicalLocation:
+    description: An inlined physical address or coordinate record.
+    attributes:
+      location_type:
+        range: LocationType
+      address_lines:
+        range: string
+        multivalued: true
+      locality:
+        range: string
+      administrative_area_text:
+        range: string
+      postal_code:
+        range: string
+      jurisdiction_entity_id:
+        range: entity_identifier
+      latitude:
+        range: decimal
+      longitude:
+        range: decimal
+      valid_from:
+        range: date
+      valid_to:
+        range: date
+      source_ids:
+        range: source_identifier
+        multivalued: true
+
+  EntityRelationship:
+    description: A qualified assertion connecting two PHNER entities.
+    attributes:
+      relationship_id:
+        identifier: true
+        range: relationship_identifier
+        required: true
+      subject_entity_id:
+        range: entity_identifier
+        required: true
+      relationship_type:
+        range: RelationshipType
+        required: true
+      object_entity_id:
+        range: entity_identifier
+        required: true
+      valid_from:
+        range: date
+      valid_to:
+        range: date
+      source_ids:
+        range: source_identifier
+        multivalued: true
+      identity_review:
+        range: IdentityReview
+        inlined: true
+        description: Required only for SAME_AS assertions.
+      curation:
+        range: CurationMetadata
+        required: true
+        inlined: true
+
+  IdentityReview:
+    description: Explicit human review supporting an exact-identity assertion.
+    attributes:
+      reviewed_by:
+        range: string
+        required: true
+      reviewed_at:
+        range: date
+        required: true
+      rationale:
+        range: string
+        required: true
+
+  PlatformParticipation:
+    description: A qualified interaction between an entity and a platform.
+    attributes:
+      participation_id:
+        identifier: true
+        range: participation_identifier
+        required: true
+      entity_id:
+        range: entity_identifier
+        required: true
+      platform_entity_id:
+        range: entity_identifier
+        required: true
+      roles:
+        range: ParticipationRole
+        multivalued: true
+        required: true
+      lifecycle_status:
+        range: ParticipationStatus
+        required: true
+      environments:
+        range: DeploymentEnvironment
+        multivalued: true
+      data_exchange_modes:
+        range: DataExchangeMode
+        multivalued: true
+      capabilities:
+        range: string
+        multivalued: true
+      valid_from:
+        range: date
+      valid_to:
+        range: date
+      source_ids:
+        range: source_identifier
+        multivalued: true
+      curation:
+        range: CurationMetadata
+        required: true
+        inlined: true
+
+  EvidenceSource:
+    description: A curator-selected source supporting one or more assertions.
+    attributes:
+      source_id:
+        identifier: true
+        range: source_identifier
+        required: true
+      source_type:
+        range: SourceType
+        required: true
+      title:
+        range: string
+        required: true
+      publisher:
+        range: string
+      url:
+        range: uri
+      document_identifier:
+        range: string
+      retrieved_at:
+        range: date
+      locator:
+        range: string
+      content_hash:
+        range: string
+      notes:
+        range: string
+
+  CurationMetadata:
+    attributes:
+      assertion_status:
+        range: AssertionStatus
+        required: true
+      steward:
+        range: string
+        required: true
+      created_at:
+        range: datetime
+      created_by:
+        range: string
+      last_reviewed:
+        range: date
+      reviewed_by:
+        range: string
+      notes:
+        range: string
+
+  RegistryRelease:
+    attributes:
+      release_id:
+        identifier: true
+        range: release_identifier
+        required: true
+      version:
+        range: string
+        required: true
+      released_at:
+        range: datetime
+      schema_version:
+        range: string
+        required: true
+      git_commit:
+        range: string
+      status:
+        range: ReleaseStatus
+        required: true
+      notes:
+        range: string
+
+enums:
+  EntityType:
+    permissible_values:
+      organization:
+      organizational_unit:
+      program:
+      initiative:
+      network:
+      group:
+      facility:
+      jurisdiction:
+      geographic_region:
+      platform:
+      other:
+
+  EntityClassification:
+    permissible_values:
+      government_organization:
+      public_health_organization:
+      federal_agency:
+      national_health_authority:
+      cdc_center:
+      cdc_institute:
+      cdc_office:
+      cdc_division:
+      cdc_branch:
+      state_health_department:
+      provincial_health_authority:
+      local_health_department:
+      territorial_health_department:
+      tribal_or_indigenous_health_organization:
+      public_health_laboratory:
+      national_public_health_laboratory:
+      state_public_health_laboratory:
+      provincial_public_health_laboratory:
+      local_public_health_laboratory:
+      public_health_laboratory_system:
+      pathogen_genomics_program:
+      funding_initiative:
+      laboratory_network:
+      public_health_consortium:
+      country_or_area:
+      first_order_administrative_area:
+      second_order_administrative_area:
+      municipality:
+      public_health_service_area:
+      reporting_region:
+      other:
+
+  NameType:
+    permissible_values:
+      acronym:
+      abbreviation:
+      alternate:
+      former:
+      legal:
+      official:
+      translated:
+      transliterated:
+      search_variant:
+
+  EntityStatus:
+    permissible_values:
+      active:
+      inactive:
+      planned:
+      superseded:
+      dissolved:
+      unknown:
+
+  AssertionStatus:
+    permissible_values:
+      verified:
+      provisional:
+      candidate:
+      disputed:
+      illustrative:
+
+  RelationshipType:
+    permissible_values:
+      PART_OF:
+      SERVES_JURISDICTION:
+      WITHIN_JURISDICTION:
+      LOCATED_IN:
+      HEADQUARTERED_IN:
+      REGISTERED_IN:
+      OPERATES_IN:
+      HAS_GEOGRAPHIC_SCOPE:
+      PARTICIPATES_IN:
+      MEMBER_OF:
+      OPERATED_BY:
+      SPONSORED_BY:
+      FUNDED_BY:
+      COLLABORATES_WITH:
+      SUCCESSOR_OF:
+      PREDECESSOR_OF:
+      SAME_AS:
+
+  ParticipationRole:
+    permissible_values:
+      data_provider:
+      data_consumer:
+      analysis_user:
+      platform_operator:
+      platform_owner:
+      steward:
+      funder:
+      implementation_partner:
+      governance_participant:
+      technical_support:
+      other:
+
+  ParticipationStatus:
+    permissible_values:
+      candidate:
+      planned:
+      onboarding:
+      active:
+      paused:
+      offboarding:
+      ended:
+      unknown:
+
+  JurisdictionScope:
+    permissible_values:
+      global:
+      multinational:
+      national:
+      subnational:
+      local:
+      tribal_or_indigenous:
+      territorial_or_dependent_area:
+      public_health_service_area:
+      not_applicable:
+      unknown:
+
+  LocationType:
+    permissible_values:
+      headquarters:
+      primary_site:
+      laboratory_site:
+      mailing_address:
+      operational_site:
+      other:
+
+  SourceType:
+    permissible_values:
+      official_web_page:
+      organizational_chart:
+      government_directory:
+      official_document:
+      governance_document:
+      registry_or_directory:
+      correspondence:
+      secondary_source:
+      other:
+
+  DeploymentEnvironment:
+    permissible_values:
+      development:
+      test:
+      staging:
+      production:
+      other:
+      unknown:
+
+  DataExchangeMode:
+    permissible_values:
+      api:
+      batch_file:
+      database:
+      event_stream:
+      manual_upload:
+      secure_transfer:
+      other:
+      unknown:
+
+  ReleaseStatus:
+    permissible_values:
+      development:
+      candidate:
+      released:
+      withdrawn:
+
+types:
+  entity_identifier:
+    typeof: string
+    pattern: "^phner-ent-[0-9]{6}$"
+  relationship_identifier:
+    typeof: string
+    pattern: "^phner-rel-[0-9]{6}$"
+  participation_identifier:
+    typeof: string
+    pattern: "^phner-par-[0-9]{6}$"
+  source_identifier:
+    typeof: string
+    pattern: "^phner-src-[0-9]{6}$"
+  release_identifier:
+    typeof: string
+    pattern: "^phner-release-[0-9]{4}-[0-9]{3}$"

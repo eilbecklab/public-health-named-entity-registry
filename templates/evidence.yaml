@@ -1,0 +1,12 @@
+# Required. Assigned by `phner new source`.
+source_id: phner-src-000000
+source_type:
+title:
+publisher:
+url:
+document_identifier:
+retrieved_at:
+locator:
+content_hash:
+notes:
+

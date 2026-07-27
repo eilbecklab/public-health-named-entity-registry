@@ -1,0 +1,21 @@
+# Required. Assigned by `phner new participation`.
+participation_id: phner-par-000000
+entity_id:
+platform_entity_id:
+roles: []
+lifecycle_status: candidate
+environments: []
+data_exchange_modes: []
+capabilities: []
+valid_from:
+valid_to:
+source_ids: []
+curation:
+  assertion_status: provisional
+  steward:
+  created_at:
+  created_by:
+  last_reviewed:
+  reviewed_by:
+  notes:
+
