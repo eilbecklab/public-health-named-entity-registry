@@ -667,19 +667,8 @@ def add_data_sheet(workbook: Workbook, title: str, columns: Sequence[Column]) ->
                 wrap_text=True,
             )
 
-    # Include the first empty entry row in the table so Excel expands it naturally.
-    table = Table(
-        displayName=title.replace(" ", ""),
-        ref=f"A1:{get_column_letter(len(columns))}2",
-    )
-    table.tableStyleInfo = TableStyleInfo(
-        name="TableStyleMedium2",
-        showFirstColumn=False,
-        showLastColumn=False,
-        showRowStripes=True,
-        showColumnStripes=False,
-    )
-    sheet.add_table(table)
+    # Keep blank intake sheets as filtered ranges rather than Excel Table parts.
+    # Desktop Excel repairs and removes a Table whose only data row is empty.
     add_required_formatting(sheet, columns)
 
 
@@ -957,6 +946,11 @@ def validate_workbook(workbook: Workbook) -> None:
             raise ValueError(f"Header mismatch in {sheet_name}")
         if not sheet.data_validations.dataValidation:
             raise ValueError(f"No dropdown validations found in {sheet_name}")
+        if sheet.tables:
+            raise ValueError(f"Blank intake sheet must not contain Excel tables: {sheet_name}")
+        expected_filter = f"A1:{get_column_letter(len(columns))}{MAX_DATA_ROW}"
+        if sheet.auto_filter.ref != expected_filter:
+            raise ValueError(f"AutoFilter range mismatch in {sheet_name}")
 
 
 def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
