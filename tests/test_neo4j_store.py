@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+import yaml
 
 from public_health_named_entity_registry.cli import build_parser
 from public_health_named_entity_registry.neo4j_store import (
@@ -38,10 +39,16 @@ def test_graph_contract_loads_repository_vocabularies(repository_root: Path):
     assert "SUPPORTED_BY" in contract.system_relationship_types
 
 
-def test_migration_statements_are_semicolon_delimited(repository_root: Path):
-    migration = (
-        repository_root / "neo4j" / "migrations" / "001_initial_graph_contract.cypher"
+def test_entity_types_match_workbook_values(repository_root: Path):
+    contract = load_graph_contract(repository_root)
+    controlled_values = yaml.safe_load(
+        (repository_root / "mappings" / "controlled_values.yaml").read_text()
     )
+    assert set(contract.entity_labels) == set(controlled_values["entity_types"])
+
+
+def test_migration_statements_are_semicolon_delimited(repository_root: Path):
+    migration = repository_root / "neo4j" / "migrations" / "001_initial_graph_contract.cypher"
     statements = split_cypher_statements(migration.read_text())
     assert len(statements) == 7
     assert all(not statement.startswith("//") for statement in statements)

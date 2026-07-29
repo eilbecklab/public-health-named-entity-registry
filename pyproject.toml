@@ -5,24 +5,22 @@ build-backend = "hatchling.build"
 [project]
 name = "public-health-named-entity-registry"
 version = "0.1.0"
-description = "A Neo4j-first public health named entity registry."
+description = "An Excel-to-Neo4j public health named entity registry."
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
 authors = [{ name = "PHNER contributors" }]
 dependencies = [
-  "linkml-runtime>=1.9,<2",
   "neo4j>=5.28,<7",
   "PyYAML>=6.0,<7",
 ]
 
 [project.optional-dependencies]
 dev = [
-  "linkml>=1.9,<2",
   "mypy>=1.15",
+  "openpyxl>=3.1,<4",
   "pre-commit>=4",
   "pytest>=8",
-  "pytest-cov>=6",
   "ruff>=0.11",
   "types-PyYAML>=6.0",
 ]

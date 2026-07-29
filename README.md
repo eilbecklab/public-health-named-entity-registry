@@ -1,16 +1,47 @@
 # Public Health Named Entity Registry
 
-PHNER is a Neo4j-first property graph of public-health named entities and their
-relationships. Neo4j is the authoritative operational store. The files in this
-repository define the graph contract, constraints, controlled relationship
-types, validation, and interchange formats.
+PHNER is a small Excel-to-Neo4j project for gathering public-health named
+entities and turning reviewed records into a property graph.
 
-This repository contains an executable MVP. It does **not** contain production
-entities.
+The immediate workflow is:
 
-## Quick start
+```text
+Excel intake workbook → review and validation → Neo4j import → graph editing
+```
 
-Create the Python environment:
+The spreadsheet is the convenient drafting surface. Neo4j becomes the
+authoritative store after data is imported.
+
+## Start gathering information
+
+Make a working copy of the
+[Excel intake workbook](templates/phner-intake-template.xlsx):
+
+```bash
+mkdir -p work
+cp templates/phner-intake-template.xlsx work/phner-intake.xlsx
+```
+
+The `work/` directory is ignored by Git so a partially completed workbook is
+not published accidentally. Open `work/phner-intake.xlsx` and begin with:
+
+1. **Sources** — official webpages, reports, directories, and documents.
+2. **Entities** — one row per organization, program, facility, jurisdiction,
+   platform, or other named entity.
+3. **Relationships** — directed connections between entities.
+
+The Names, Locations, and Platform Participations sheets are optional. See the
+[workbook guide](docs/intake-workbook.md), [evidence guide](docs/evidence-guide.md),
+and [relationship guide](docs/relationship-guide.md) for field guidance.
+
+Use temporary workbook keys such as `ENT-001` and `SRC-001`. Do not assign
+permanent `phner-*` identifiers manually.
+
+The repository does not yet contain the Excel import command. Until it is
+implemented, treat a completed workbook as reviewed intake material rather
+than as a synchronized copy of Neo4j.
+
+## Install the tools
 
 ```bash
 python3 -m venv .venv
@@ -19,7 +50,15 @@ python -m pip install --upgrade pip
 python -m pip install -e ".[dev]"
 ```
 
-Configure a running Neo4j database:
+Regenerate the blank workbook after changing controlled values:
+
+```bash
+python scripts/generate_intake_workbook.py
+```
+
+## Connect Neo4j
+
+Create and start a local Neo4j instance, then configure the terminal:
 
 ```bash
 export NEO4J_URI="neo4j://localhost:7687"
@@ -30,9 +69,7 @@ echo
 export NEO4J_PASSWORD
 ```
 
-Do not put the password in this repository or directly in a command.
-
-Initialize and check the graph:
+Initialize and verify the database:
 
 ```bash
 phner graph check
@@ -41,73 +78,19 @@ phner graph validate
 phner graph stats
 ```
 
-Create entity stubs with collision-safe PHNER IDs:
+The CLI can also create individual entities and relationships directly. See
+the [Neo4j workflow](docs/neo4j-workflow.md).
 
-```bash
-phner graph new-entity \
-  --name "Example Public Health Organization" \
-  --type organization \
-  --created-by "$USER"
-```
+## Relevant repository areas
 
-Create an identified relationship after both endpoint entities exist:
+- `templates/phner-intake-template.xlsx` — the workbook to fill out
+- `scripts/generate_intake_workbook.py` — reproducible template generator
+- `mappings/controlled_values.yaml` — workbook dropdown values
+- `mappings/neo4j_mapping.yaml` — entity type to Neo4j label mapping
+- `mappings/relationship_rules.yaml` — allowed graph relationships
+- `neo4j/migrations/` — database constraints and indexes
+- `src/public_health_named_entity_registry/` — the small Neo4j CLI
+- `tests/` — workbook and graph-contract checks
 
-```bash
-phner graph new-relationship \
-  --subject phner-ent-000001 \
-  --type OPERATES_IN \
-  --object phner-ent-000002 \
-  --created-by "$USER"
-```
-
-The commands print the assigned identifiers. Open the database in Neo4j Bloom
-to edit properties and visually connect records. Use the CLI to allocate IDs
-before editing so uniqueness does not depend on a person choosing a number.
-
-See [the Neo4j workflow](docs/neo4j-workflow.md) and
-[the curation guide](CURATION_GUIDE.md) for the complete workflow.
-
-## Graph contract
-
-The canonical graph uses:
-
-- `NamedEntity` nodes with stable `entity_id` values;
-- a secondary label such as `Organization`, `Jurisdiction`, or `Platform`;
-- typed domain relationships such as `PART_OF` and `OPERATES_IN`;
-- stable `relationship_id` properties on domain relationships;
-- repository-controlled constraints and indexes in `neo4j/migrations/`;
-- entity labels in `mappings/neo4j_mapping.yaml`;
-- relationship vocabulary and endpoint rules in
-  `mappings/relationship_rules.yaml`.
-
-The LinkML schema remains useful as an interchange contract and artifact
-generator. YAML under `data/` is optional import/export material, not the
-authoritative editing surface.
-
-## Validation, export, and backup
-
-Run live graph validation:
-
-```bash
-phner graph validate
-```
-
-Create a portable JSON snapshot for inspection or downstream processing:
-
-```bash
-phner graph export
-```
-
-The default output is `build/neo4j-snapshot.json`, which is ignored by Git.
-This snapshot is not an operational database backup. Use the backup facilities
-appropriate to the deployed Neo4j edition and hosting model.
-
-## Source-of-truth boundary
-
-1. Neo4j contains canonical entities and relationships.
-2. Git contains graph migrations, mapping rules, validation code, and docs.
-3. Bloom is the initial human editing interface.
-4. A future browser can use the official Neo4j driver or API against the same
-   stable graph contract.
-5. YAML, CSV, JSON, RDF, and release bundles are interchange or publication
-   views, not parallel master copies.
+Do not commit passwords, database backups, or graph exports containing
+production data.

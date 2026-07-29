@@ -18,12 +18,10 @@ jobs:
           python-version: "3.13"
           cache: pip
       - run: python -m pip install -e ".[dev]"
-      - run: linkml-validate src/public_health_named_entity_registry/schema/public_health_named_entity_registry.yaml
-      - run: phner validate registry
       - run: pytest
       - run: ruff check .
       - run: mypy
-      - run: phner generate-schema
+      - run: python scripts/generate_intake_workbook.py --output build/test-intake.xlsx
 
   neo4j-smoke:
     runs-on: ubuntu-latest

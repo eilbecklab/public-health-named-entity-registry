@@ -27,9 +27,8 @@ Do not substitute `PART_OF` for service jurisdiction or location. Do not use a
 generic `RELATED_TO`. Platform interaction belongs in a participation record
 when it carries roles, lifecycle, or environment details.
 
-`SAME_AS` requires evidence, `identity_review` metadata, and an approved
-[governance decision record](decisions/README.md). It must never be generated
-from name similarity or a shared external identifier.
+`SAME_AS` requires evidence and explicit identity-review metadata. It must never
+be generated from name similarity or a shared external identifier.
 
 Machine-enforced endpoint, acyclicity, and cardinality policies live in
 `mappings/relationship_rules.yaml`.

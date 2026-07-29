@@ -1,0 +1,142 @@
+entity_types:
+  - organization
+  - organizational_unit
+  - program
+  - initiative
+  - network
+  - group
+  - facility
+  - jurisdiction
+  - geographic_region
+  - platform
+  - other
+
+entity_classifications:
+  - government_organization
+  - public_health_organization
+  - federal_agency
+  - national_health_authority
+  - cdc_center
+  - cdc_institute
+  - cdc_office
+  - cdc_division
+  - cdc_branch
+  - state_health_department
+  - provincial_health_authority
+  - local_health_department
+  - territorial_health_department
+  - tribal_or_indigenous_health_organization
+  - public_health_laboratory
+  - national_public_health_laboratory
+  - state_public_health_laboratory
+  - provincial_public_health_laboratory
+  - local_public_health_laboratory
+  - public_health_laboratory_system
+  - pathogen_genomics_program
+  - funding_initiative
+  - laboratory_network
+  - public_health_consortium
+  - country_or_area
+  - first_order_administrative_area
+  - second_order_administrative_area
+  - municipality
+  - public_health_service_area
+  - reporting_region
+  - other
+
+name_types:
+  - acronym
+  - abbreviation
+  - alternate
+  - former
+  - legal
+  - official
+  - translated
+  - transliterated
+  - search_variant
+
+entity_statuses:
+  - active
+  - inactive
+  - planned
+  - superseded
+  - dissolved
+  - unknown
+
+assertion_statuses:
+  - verified
+  - provisional
+  - candidate
+  - disputed
+  - illustrative
+
+jurisdiction_scopes:
+  - global
+  - multinational
+  - national
+  - subnational
+  - local
+  - tribal_or_indigenous
+  - territorial_or_dependent_area
+  - public_health_service_area
+  - not_applicable
+  - unknown
+
+location_types:
+  - headquarters
+  - primary_site
+  - laboratory_site
+  - mailing_address
+  - operational_site
+  - other
+
+source_types:
+  - official_web_page
+  - organizational_chart
+  - government_directory
+  - official_document
+  - governance_document
+  - registry_or_directory
+  - correspondence
+  - secondary_source
+  - other
+
+participation_roles:
+  - data_provider
+  - data_consumer
+  - analysis_user
+  - platform_operator
+  - platform_owner
+  - steward
+  - funder
+  - implementation_partner
+  - governance_participant
+  - technical_support
+  - other
+
+participation_statuses:
+  - candidate
+  - planned
+  - onboarding
+  - active
+  - paused
+  - offboarding
+  - ended
+  - unknown
+
+deployment_environments:
+  - development
+  - test
+  - staging
+  - production
+  - other
+  - unknown
+
+data_exchange_modes:
+  - api
+  - batch_file
+  - database
+  - event_stream
+  - manual_upload
+  - secure_transfer
+  - other

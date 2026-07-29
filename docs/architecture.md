@@ -1,63 +1,47 @@
 # Architecture
 
-PHNER uses Neo4j as its canonical operational store:
+PHNER is intentionally organized around one simple path:
 
 ```text
-Git-controlled graph contract
-  ├── Cypher migrations and constraints
-  ├── entity labels and relationship rules
-  └── validation and interchange schema
-                    |
-                    v
-             canonical Neo4j graph
-              /        |         \
-          Bloom     future UI     exports/backups
-          editor     and APIs     for interchange
+Excel intake workbook
+        |
+        | review and future import command
+        v
+canonical Neo4j graph
+        |
+        +-- Neo4j Bloom for graph inspection and editing
+        +-- portable exports and database backups
 ```
 
-## Responsibilities
+## Excel intake
 
-Neo4j stores the current named entities, their stable PHNER IDs, typed
-relationships, and operational curation properties. Editors create an
-ID-bearing entity stub through `phner graph new-entity`, then edit it in Bloom
-or a future browser.
+The workbook is optimized for research and data entry. Temporary keys connect
+rows across sheets without asking an editor to allocate permanent identifiers.
+Dropdown values and relationship rules come from the YAML mappings in this
+repository.
 
-Git stores the contract for that graph:
+The workbook is not a second graph database and is not synchronized with
+Neo4j. A future import command should validate a reviewed workbook, allocate
+permanent identifiers atomically, and load all accepted rows in a transaction.
 
-- `neo4j/migrations/` contains ordered Cypher migrations;
-- `mappings/neo4j_mapping.yaml` maps entity types to Neo4j labels;
-- `mappings/relationship_rules.yaml` defines the allowed domain relationships;
-- the LinkML schema defines interchange structures and enumerations;
-- Python validation checks the live graph for contract violations.
+## Neo4j
 
-## Identity
+Neo4j is authoritative after import. Each `NamedEntity` receives a stable
+`entity_id`, and each domain relationship receives a stable
+`relationship_id`. These identifiers are opaque and must not encode names or
+organizational structure.
 
-`entity_id` is the stable business key for every `NamedEntity`. Neo4j internal
-element IDs must never be exposed as registry identifiers because they are not
-portable across exports, restores, or database copies.
+The CLI applies database migrations, allocates identifiers, creates individual
+entities and relationships, validates the live graph, reports counts, and
+creates portable JSON snapshots.
 
-The CLI allocates identifiers atomically through `PhnerCounter` nodes. This
-avoids collisions between concurrent editors. Domain relationships receive
-their own `relationship_id` values for the same reason.
+Git stores only the reusable graph contract and tooling:
 
-## Editing
+- controlled workbook values;
+- entity-label and relationship mappings;
+- Cypher constraints and indexes;
+- workbook generation and Neo4j commands;
+- tests and concise operating documentation.
 
-Bloom is the initial editor. It can update visible node and relationship
-properties and create connections directly in Neo4j. The PHNER CLI remains the
-preferred creation path because it allocates IDs and supplies baseline
-properties.
-
-The future browser should use parameterized queries through an official Neo4j
-driver and preserve the same business keys and controlled relationship types.
-
-## Interchange and recovery
-
-`phner graph export` creates a portable JSON snapshot for review and downstream
-transformation. It is not a substitute for Neo4j database backups.
-
-Operational recovery must use the backup or dump mechanism supported by the
-deployed Neo4j edition. Credentials, database dumps, and exported production
-data must not be committed to this repository.
-
-The existing YAML loader and LinkML generation tools remain available for
-interchange and migration work, but `data/` is no longer the canonical store.
+Credentials, completed production workbooks, graph exports, and database
+backups require separate handling appropriate to their sensitivity.

@@ -1,12 +1,20 @@
-.PHONY: install graph-check graph-init graph-validate graph-stats graph-export \
-	validate-schema validate-interchange test lint typecheck generate-interchange all
+.PHONY: install workbook test lint typecheck graph-check graph-init \
+	graph-validate graph-stats graph-export all
 
 install:
 	python3 -m pip install -e ".[dev]"
 
-validate-schema:
-	linkml-validate src/public_health_named_entity_registry/schema/public_health_named_entity_registry.yaml
-	phner generate-schema
+workbook:
+	python scripts/generate_intake_workbook.py
+
+test:
+	pytest
+
+lint:
+	ruff check .
+
+typecheck:
+	mypy
 
 graph-check:
 	phner graph check
@@ -23,19 +31,4 @@ graph-stats:
 graph-export:
 	phner graph export
 
-validate-interchange:
-	phner validate registry
-
-test:
-	pytest
-
-lint:
-	ruff check .
-
-typecheck:
-	mypy
-
-generate-interchange:
-	phner build
-
-all: validate-schema test lint typecheck
+all: test lint typecheck

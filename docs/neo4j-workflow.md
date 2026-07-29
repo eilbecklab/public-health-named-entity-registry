@@ -1,7 +1,9 @@
-# Neo4j-first workflow
+# Neo4j workflow
 
-Neo4j is the PHNER source of truth. This document describes the workflow before
-a dedicated PHNER browser is available.
+The Excel workbook is the drafting and intake surface. Neo4j becomes the PHNER
+source of truth after reviewed records are imported. This document describes
+the current database operations before a workbook importer or dedicated browser
+is available.
 
 ## 1. Connect
 
@@ -39,7 +41,16 @@ Migrations should be additive and idempotent where practical. Never edit a
 migration that has already been applied to a shared database; add a new
 numbered migration.
 
-## 3. Create and edit entities
+## 3. Workbook boundary
+
+The workbook is not synchronized automatically with Neo4j. Continue gathering
+and reviewing records there until an import command is available. Temporary
+workbook keys must not be copied into Neo4j as permanent identifiers.
+
+The commands below support individual records and smoke testing in the
+meantime.
+
+## 4. Create and edit individual entities
 
 Create a stub:
 
@@ -70,7 +81,7 @@ Bloom can create nodes directly, but the CLI is preferred because it assigns a
 collision-safe ID. If Bloom is used to create a node, run `phner graph
 validate` immediately and repair any missing required properties.
 
-## 4. Create relationships
+## 5. Create individual relationships
 
 After both endpoint nodes exist:
 
@@ -87,7 +98,7 @@ a direct property-graph relationship carrying a stable `relationship_id`.
 Additional properties such as `valid_from`, `valid_to`, `source_ids`, and
 `assertion_status` can be edited in Bloom.
 
-## 5. Validate
+## 6. Validate
 
 ```bash
 phner graph validate
@@ -106,7 +117,7 @@ Current validation detects:
 More domain checks can be added as Cypher-backed validators without moving
 canonical data out of Neo4j.
 
-## 6. Export and back up
+## 7. Export and back up
 
 Create a portable snapshot:
 
@@ -126,20 +137,11 @@ Use Neo4j's database backup facilities for disaster recovery:
 
 Keep production exports and database backups outside Git.
 
-## 7. Future browser
+## 8. Future import
 
-The browser should operate on the same graph rather than creating another data
-store. Its first functions should be:
-
-1. search by PHNER ID, preferred name, alias, and type;
-2. create an entity through an atomic server-side ID allocator;
-3. edit entity properties with controlled selections;
-4. create only allowed relationship types;
-5. show relationship direction and properties;
-6. run graph validation before marking an edit complete;
-7. record authenticated editor identity and timestamps.
-
-The CLI functions provide a reference implementation for those operations.
+The first import command should validate workbook structure and controlled
+values, report all errors before writing, allocate permanent IDs atomically,
+and load a reviewed workbook in a transaction.
 
 ## Neo4j references
 

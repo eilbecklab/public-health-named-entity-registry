@@ -11,12 +11,12 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+import yaml
 from neo4j.exceptions import AuthError, Neo4jError, ServiceUnavailable
 
 from neo4j import GraphDatabase, ManagedTransaction
 
 from .config import project_root
-from .yaml_io import load_yaml
 
 SAFE_GRAPH_SYMBOL = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 ENTITY_ID_PATTERN = re.compile(r"^phner-ent-[0-9]{6}$")
@@ -75,14 +75,21 @@ class GraphFinding:
     message: str
 
 
+def _load_yaml_mapping(path: Path) -> dict[str, Any]:
+    """Load a repository-controlled YAML mapping."""
+    with path.open(encoding="utf-8") as stream:
+        raw: object = yaml.safe_load(stream)
+    if not isinstance(raw, dict):
+        raise GraphStoreError(f"Expected a YAML mapping in {path}")
+    return {str(key): value for key, value in raw.items()}
+
+
 def load_graph_contract(root: Path | None = None) -> GraphContract:
     """Load and validate the graph vocabulary kept in Git."""
 
     root = project_root(root)
-    mapping_raw = load_yaml(root / "mappings" / "neo4j_mapping.yaml")
-    rules_raw = load_yaml(root / "mappings" / "relationship_rules.yaml")
-    if not isinstance(mapping_raw, dict) or not isinstance(rules_raw, dict):
-        raise GraphStoreError("Neo4j mapping and relationship rules must be YAML mappings.")
+    mapping_raw = _load_yaml_mapping(root / "mappings" / "neo4j_mapping.yaml")
+    rules_raw = _load_yaml_mapping(root / "mappings" / "relationship_rules.yaml")
     labels_raw = mapping_raw.get("entity_labels")
     if not isinstance(labels_raw, dict) or not labels_raw:
         raise GraphStoreError("mappings/neo4j_mapping.yaml must define entity_labels.")
@@ -289,9 +296,7 @@ def create_relationship(
             object=object_entity_id,
         ).single()
         if endpoints is None:
-            raise GraphStoreError(
-                "Both relationship endpoints must exist as NamedEntity nodes."
-            )
+            raise GraphStoreError("Both relationship endpoints must exist as NamedEntity nodes.")
         identifier = _allocate_identifier(transaction, "relationship", "phner-rel-")
         result = transaction.run(
             f"""
