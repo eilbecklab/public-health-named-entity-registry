@@ -489,7 +489,7 @@ def add_instruction_sheet(workbook: Workbook) -> None:
         (
             "Data-entry rules",
             [
-                "Enter data in a working copy, not in the blank template committed to Git.",
+                "Enter data in intake/phner-intake.xlsx, not in the blank template.",
                 "A green header with an asterisk is required; a blue header is optional.",
                 "Use dropdown values exactly as supplied. The Lookup Values sheet contains all "
                 "controlled vocabularies.",

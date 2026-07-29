@@ -14,16 +14,8 @@ authoritative store after data is imported.
 
 ## Start gathering information
 
-Make a working copy of the
-[Excel intake workbook](templates/phner-intake-template.xlsx):
-
-```bash
-mkdir -p work
-cp templates/phner-intake-template.xlsx work/phner-intake.xlsx
-```
-
-The `work/` directory is ignored by Git so a partially completed workbook is
-not published accidentally. Open `work/phner-intake.xlsx` and begin with:
+Open the versioned
+[working intake workbook](intake/phner-intake.xlsx) and begin with:
 
 1. **Sources** — official webpages, reports, directories, and documents.
 2. **Entities** — one row per organization, program, facility, jurisdiction,
@@ -36,6 +28,11 @@ and [relationship guide](docs/relationship-guide.md) for field guidance.
 
 Use temporary workbook keys such as `ENT-001` and `SRC-001`. Do not assign
 permanent `phner-*` identifiers manually.
+
+The working workbook is committed to this public repository. Do not enter
+private, confidential, or restricted information in it. The unchanged
+[blank template](templates/phner-intake-template.xlsx) remains available when
+you need a fresh workbook.
 
 The repository does not yet contain the Excel import command. Until it is
 implemented, treat a completed workbook as reviewed intake material rather
@@ -50,7 +47,7 @@ python -m pip install --upgrade pip
 python -m pip install -e ".[dev]"
 ```
 
-Regenerate the blank workbook after changing controlled values:
+Regenerate only the blank template after changing controlled values:
 
 ```bash
 python scripts/generate_intake_workbook.py
@@ -83,7 +80,8 @@ the [Neo4j workflow](docs/neo4j-workflow.md).
 
 ## Relevant repository areas
 
-- `templates/phner-intake-template.xlsx` — the workbook to fill out
+- `intake/phner-intake.xlsx` — the versioned workbook to fill out
+- `templates/phner-intake-template.xlsx` — an unchanged blank starting point
 - `scripts/generate_intake_workbook.py` — reproducible template generator
 - `mappings/controlled_values.yaml` — workbook dropdown values
 - `mappings/neo4j_mapping.yaml` — entity type to Neo4j label mapping

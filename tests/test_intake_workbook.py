@@ -48,3 +48,21 @@ def test_committed_template_can_be_opened(repository_root: Path) -> None:
     workbook = load_workbook(path, read_only=False, data_only=False)
     assert workbook.properties.title == "PHNER graph intake workbook"
     assert workbook["Instructions"]["A1"].value == "PHNER graph intake workbook"
+
+
+def test_versioned_working_workbook_can_be_opened(repository_root: Path) -> None:
+    path = repository_root / "intake" / "phner-intake.xlsx"
+    workbook = load_workbook(path, read_only=False, data_only=False)
+    assert workbook.properties.title == "PHNER graph intake workbook"
+    assert workbook.sheetnames == [
+        "Instructions",
+        "Entities",
+        "Relationships",
+        "Sources",
+        "Names",
+        "Locations",
+        "Platform Participations",
+        "Relationship Guide",
+        "Lookup Values",
+        "Examples",
+    ]
