@@ -11,7 +11,7 @@ from openpyxl import load_workbook
 from openpyxl.worksheet.worksheet import Worksheet
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_SOURCE = PROJECT_ROOT / "intake" / "PHNER-US-FED-DHHS.xlsx"
+DEFAULT_SOURCE = PROJECT_ROOT / "intake" / "US-FED-DHHS.xlsx"
 DEFAULT_OUTPUT = PROJECT_ROOT / "templates" / "phner-intake-template.xlsx"
 
 EXPECTED_SHEETS = [

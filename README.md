@@ -15,7 +15,7 @@ authoritative store after data is imported.
 ## Start gathering information
 
 Open the versioned
-[working DHHS intake workbook](intake/PHNER-US-FED-DHHS.xlsx) and begin with:
+[working federal DHHS intake workbook](intake/US-FED-DHHS.xlsx) and begin with:
 
 1. **Entities** — one row per organization or organizational unit. Use
    `parent_intake_key` to record the internal hierarchy.
@@ -84,7 +84,8 @@ the [Neo4j workflow](docs/neo4j-workflow.md).
 
 ## Relevant repository areas
 
-- `intake/PHNER-US-FED-DHHS.xlsx` — the versioned DHHS workbook to fill out
+- `intake/US-FED-DHHS.xlsx` — the versioned federal DHHS workbook
+- `intake/US-UT-UDHHS.xlsx` — the versioned Utah DHHS workbook
 - `templates/phner-intake-template.xlsx` — an unchanged blank starting point
 - `scripts/generate_intake_workbook.py` — blank copy of the current workbook
 - `mappings/controlled_values.yaml` — workbook dropdown values

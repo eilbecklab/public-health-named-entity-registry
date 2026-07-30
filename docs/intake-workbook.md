@@ -1,6 +1,6 @@
 # Excel intake workbook
 
-The [working DHHS intake workbook](../intake/PHNER-US-FED-DHHS.xlsx) is a structured
+The [working federal DHHS intake workbook](../intake/US-FED-DHHS.xlsx) is a structured
 staging area for gathering information before loading reviewed records into
 Neo4j. It is intended to make early research and collaborative data entry
 easier; it does not replace Neo4j as the canonical graph.
@@ -51,4 +51,4 @@ python scripts/generate_intake_workbook.py
 
 Regenerate it whenever the working workbook's structure or controls change,
 then review the template before committing it. This command deliberately does
-not overwrite `intake/PHNER-US-FED-DHHS.xlsx`.
+not overwrite `intake/US-FED-DHHS.xlsx`.

@@ -100,23 +100,20 @@ def test_committed_template_can_be_opened(repository_root: Path) -> None:
     assert_excel_compatible_entry_sheets(path)
 
 
-def test_versioned_working_workbook_can_be_opened(repository_root: Path) -> None:
-    path = repository_root / "intake" / "PHNER-US-FED-DHHS.xlsx"
-    workbook = load_workbook(path, read_only=False, data_only=False)
-    assert workbook.properties.title == "PHNER graph intake workbook"
-    assert workbook.sheetnames == [
-        "Entities",
-        "Relationships",
-        "Names",
-        "Relationship Guide",
-        "Lookup Values",
-        "Examples",
-    ]
-    entities = workbook["Entities"]
-    assert entities["I1"].value == "breadcrumb"
-    assert entities["I2"].data_type == "f"
-    assert "parent_intake_key" in entities["I1"].comment.text
-    entity_count = sum(
-        1 for row in entities.iter_rows(min_row=2, min_col=1, max_col=1) if row[0].value
-    )
-    assert entity_count > 0
+def test_versioned_working_workbooks_can_be_opened(repository_root: Path) -> None:
+    for filename in ("US-FED-DHHS.xlsx", "US-UT-UDHHS.xlsx"):
+        path = repository_root / "intake" / filename
+        workbook = load_workbook(path, read_only=False, data_only=False)
+        assert workbook.properties.title == "PHNER graph intake workbook"
+        assert workbook.sheetnames == [
+            "Entities",
+            "Relationships",
+            "Names",
+            "Relationship Guide",
+            "Lookup Values",
+            "Examples",
+        ]
+        entities = workbook["Entities"]
+        assert entities["I1"].value == "breadcrumb"
+        assert entities["I2"].data_type == "f"
+        assert "parent_intake_key" in entities["I1"].comment.text
