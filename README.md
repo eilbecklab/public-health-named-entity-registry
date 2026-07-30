@@ -15,18 +15,21 @@ authoritative store after data is imported.
 ## Start gathering information
 
 Open the versioned
-[working intake workbook](intake/phner-intake.xlsx) and begin with:
+[working DHHS intake workbook](intake/PHNER-US-FED-DHHS.xlsx) and begin with:
 
-1. **Sources** — official webpages, reports, directories, and documents.
-2. **Entities** — one row per organization, program, facility, jurisdiction,
-   platform, or other named entity.
-3. **Relationships** — directed connections between entities.
+1. **Entities** — one row per organization or organizational unit. Use
+   `parent_intake_key` to record the internal hierarchy.
+2. Use the calculated `breadcrumb` column to review each entity's complete
+   hierarchy path.
+3. **Names** — optional aliases and other names.
+4. **Relationships** — optional directed connections not represented by the
+   internal parent hierarchy.
 
-The Names, Locations, and Platform Participations sheets are optional. See the
+See the
 [workbook guide](docs/intake-workbook.md), [evidence guide](docs/evidence-guide.md),
 and [relationship guide](docs/relationship-guide.md) for field guidance.
 
-Use temporary workbook keys such as `ENT-001` and `SRC-001`. Do not assign
+Use temporary workbook keys such as `ENT-001` and `REL-001`. Do not assign
 permanent `phner-*` identifiers manually.
 
 The working workbook is committed to this public repository. Do not enter
@@ -47,7 +50,8 @@ python -m pip install --upgrade pip
 python -m pip install -e ".[dev]"
 ```
 
-Regenerate only the blank template after changing controlled values:
+Regenerate the blank template after changing the working workbook's columns,
+formatting, validation, or reference tabs:
 
 ```bash
 python scripts/generate_intake_workbook.py
@@ -80,9 +84,9 @@ the [Neo4j workflow](docs/neo4j-workflow.md).
 
 ## Relevant repository areas
 
-- `intake/phner-intake.xlsx` — the versioned workbook to fill out
+- `intake/PHNER-US-FED-DHHS.xlsx` — the versioned DHHS workbook to fill out
 - `templates/phner-intake-template.xlsx` — an unchanged blank starting point
-- `scripts/generate_intake_workbook.py` — reproducible template generator
+- `scripts/generate_intake_workbook.py` — blank copy of the current workbook
 - `mappings/controlled_values.yaml` — workbook dropdown values
 - `mappings/neo4j_mapping.yaml` — entity type to Neo4j label mapping
 - `mappings/relationship_rules.yaml` — allowed graph relationships

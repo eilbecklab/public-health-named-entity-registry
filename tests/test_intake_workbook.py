@@ -10,10 +10,7 @@ from openpyxl import load_workbook
 DATA_SHEETS = [
     "Entities",
     "Relationships",
-    "Sources",
     "Names",
-    "Locations",
-    "Platform Participations",
 ]
 
 
@@ -30,7 +27,10 @@ def assert_excel_compatible_entry_sheets(path: Path) -> None:
     assert table_parts == ["xl/tables/table1.xml"]
 
 
-def test_committed_intake_workbook_matches_generator(tmp_path: Path) -> None:
+def test_committed_intake_template_matches_generator(
+    repository_root: Path,
+    tmp_path: Path,
+) -> None:
     generated = tmp_path / "phner-intake-template.xlsx"
     subprocess.run(
         [
@@ -42,28 +42,53 @@ def test_committed_intake_workbook_matches_generator(tmp_path: Path) -> None:
         check=True,
     )
 
-    workbook = load_workbook(generated)
-    assert workbook.sheetnames == [
-        "Instructions",
+    generated_workbook = load_workbook(generated)
+    committed_workbook = load_workbook(
+        repository_root / "templates" / "phner-intake-template.xlsx"
+    )
+    assert generated_workbook.sheetnames == [
         "Entities",
         "Relationships",
-        "Sources",
         "Names",
-        "Locations",
-        "Platform Participations",
         "Relationship Guide",
         "Lookup Values",
         "Examples",
     ]
-    assert workbook["Entities"]["A1"].value == "intake_key *"
-    assert workbook["Entities"]["C1"].value == "entity_type *"
-    assert workbook["Relationships"]["C1"].value == "relationship_type *"
-    assert workbook["Sources"]["B1"].value == "source_type *"
-    assert "EntityTypes" in workbook.defined_names
-    assert "RelationshipTypes" in workbook.defined_names
-    assert "EntityKeys" in workbook.defined_names
-    assert len(workbook["Entities"].data_validations.dataValidation) >= 3
-    assert len(workbook["Relationships"].data_validations.dataValidation) >= 4
+    assert committed_workbook.sheetnames == generated_workbook.sheetnames
+    for sheet_name in generated_workbook.sheetnames:
+        generated_sheet = generated_workbook[sheet_name]
+        committed_sheet = committed_workbook[sheet_name]
+        assert (generated_sheet.max_row, generated_sheet.max_column) == (
+            committed_sheet.max_row,
+            committed_sheet.max_column,
+        )
+        for row in generated_sheet.iter_rows():
+            for cell in row:
+                assert cell.value == committed_sheet[cell.coordinate].value
+
+    entities = generated_workbook["Entities"]
+    assert entities["A1"].value == "intake_key *"
+    assert entities["C1"].value == "entity_type *"
+    assert entities["I1"].value == "breadcrumb"
+    assert all(entities.cell(row, 1).value is None for row in range(2, 1002))
+    assert all(entities.cell(row, 9).data_type == "f" for row in range(2, 1002))
+    assert all(
+        generated_workbook["Relationships"].cell(row, 1).value is None
+        for row in range(2, 1002)
+    )
+    assert all(
+        generated_workbook["Names"].cell(row, 1).value is None
+        for row in range(2, generated_workbook["Names"].max_row + 1)
+    )
+    assert "EntityTypes" in generated_workbook.defined_names
+    assert "RelationshipTypes" in generated_workbook.defined_names
+    assert "EntityKeys" in generated_workbook.defined_names
+    assert len(entities.data_validations.dataValidation) == 2
+    assert (
+        len(generated_workbook["Relationships"].data_validations.dataValidation) == 2
+    )
+    assert generated_workbook.properties.creator == "PHNER contributors"
+    assert generated_workbook.properties.lastModifiedBy == "PHNER contributors"
     assert_excel_compatible_entry_sheets(generated)
 
 
@@ -71,24 +96,27 @@ def test_committed_template_can_be_opened(repository_root: Path) -> None:
     path = repository_root / "templates" / "phner-intake-template.xlsx"
     workbook = load_workbook(path, read_only=False, data_only=False)
     assert workbook.properties.title == "PHNER graph intake workbook"
-    assert workbook["Instructions"]["A1"].value == "PHNER graph intake workbook"
+    assert workbook["Entities"]["I1"].value == "breadcrumb"
     assert_excel_compatible_entry_sheets(path)
 
 
 def test_versioned_working_workbook_can_be_opened(repository_root: Path) -> None:
-    path = repository_root / "intake" / "phner-intake.xlsx"
+    path = repository_root / "intake" / "PHNER-US-FED-DHHS.xlsx"
     workbook = load_workbook(path, read_only=False, data_only=False)
     assert workbook.properties.title == "PHNER graph intake workbook"
     assert workbook.sheetnames == [
-        "Instructions",
         "Entities",
         "Relationships",
-        "Sources",
         "Names",
-        "Locations",
-        "Platform Participations",
         "Relationship Guide",
         "Lookup Values",
         "Examples",
     ]
-    assert_excel_compatible_entry_sheets(path)
+    entities = workbook["Entities"]
+    assert entities["I1"].value == "breadcrumb"
+    assert entities["I2"].data_type == "f"
+    assert "parent_intake_key" in entities["I1"].comment.text
+    entity_count = sum(
+        1 for row in entities.iter_rows(min_row=2, min_col=1, max_col=1) if row[0].value
+    )
+    assert entity_count > 0
